@@ -7,23 +7,9 @@ return {
   'nvim-lua/plenary.nvim', -- lua functions that many plugins use
   'christoomey/vim-tmux-navigator', -- tmux & split window navigation
   {
-    'echasnovski/mini.surround',
-    recommended = true,
-    opts = {
-      mappings = {
-        add = 'gsa', -- Add surrounding in Normal and Visual modes
-        delete = 'gsd', -- Delete surrounding
-        find = 'gsf', -- Find surrounding (to the right)
-        find_left = 'gsF', -- Find surrounding (to the left)
-        highlight = 'gsh', -- Highlight surrounding
-        replace = 'gsr', -- Replace surrounding
-        update_n_lines = 'gsn', -- Update `n_lines`
-      },
-    },
-  },
-  {
     'stevearc/oil.nvim',
     lazy = false,
+    dependencies = { { 'echasnovski/mini.icons', opts = {} } },
     ---@module 'oil'
     ---@type oil.SetupOpts
     opts = {
@@ -39,7 +25,6 @@ return {
       },
     },
     -- Optional dependencies
-    dependencies = { 'nvim-tree/nvim-web-devicons' }, -- use if prefer nvim-web-devicons
     keys = {
       { '<leader>fo', '<cmd>Oil --float<cr>', desc = 'Open File Explorer (Oil)' },
       {

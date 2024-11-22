@@ -12,6 +12,12 @@ return {
     keys = {
       { '<leader>gg', '<cmd>Neogit<cr>', desc = 'Git Status (Neogit)' },
     },
-    config = true,
+    opts = {
+      mappings = {
+        status = {
+          ['<esc>'] = 'Close',
+        },
+      },
+    },
   },
 }
