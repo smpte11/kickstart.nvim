@@ -173,9 +173,6 @@ vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 -- Diagnostic keymaps
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 
--- Save
-vim.keymap.set({ 'i', 'x', 'n', 's' }, '<C-s>', '<cmd>w<cr><esc>', { desc = 'Save file' })
-
 -- Buffers
 vim.keymap.set('n', '<S-h>', '<cmd>bprevious<cr>', { desc = 'Prev Buffer', silent = true })
 vim.keymap.set('n', '<S-l>', '<cmd>bnext<cr>', { desc = 'Next Buffer', silent = true })
@@ -371,6 +368,7 @@ require('lazy').setup({
         { '<leader>t', group = '[T]oggle' },
         { '<leader>g', group = '[G]it' },
         { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
+        { '<leader>R', group = 'HTTP [R]est Client' },
         { '<leader>tm', group = '[M]iniMap' },
       },
     },
@@ -389,6 +387,12 @@ require('lazy').setup({
     branch = '0.1.x',
     dependencies = {
       'nvim-lua/plenary.nvim',
+      {
+        'nvim-telescope/telescope-live-grep-args.nvim',
+        -- This will not install any breaking changes.
+        -- For major updates, this must be adjusted manually.
+        version = '^1.0.0',
+      },
       { -- If encountering errors, see telescope-fzf-native README for installation instructions
         'nvim-telescope/telescope-fzf-native.nvim',
 
@@ -426,39 +430,72 @@ require('lazy').setup({
 
       -- [[ Configure Telescope ]]
       -- See `:help telescope` and `:help telescope.setup()`
-      require('telescope').setup {
+      local telescope = require 'telescope'
+      local actions = require 'telescope.actions'
+      local lga_actions = require 'telescope-live-grep-args.actions'
+
+      -- functions
+      local function custom_path_display(opts, path)
+        local parts = vim.split(path, '/')
+        local num_parts = #parts
+
+        if num_parts <= 3 then
+          -- If the path has 3 or fewer parts, display it as is
+          return path
+        else
+          -- Otherwise, shorten the path but keep the last 3 parts in full
+          local shortened_path = table.concat(parts, '/', 1, num_parts - 3)
+          local last_three_parts = table.concat(parts, '/', num_parts - 2, num_parts)
+          return ' ' .. shortened_path .. '/  /' .. last_three_parts
+        end
+      end
+
+      telescope.setup {
         -- You can put your default mappings / updates / etc. in here
         --  All the info you're looking for is in `:help telescope.setup()`
         --
-        -- defaults = {
-        --   mappings = {
-        --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
-        --   },
-        -- },
+        defaults = {
+          path_display = custom_path_display,
+          --   mappings = {
+          --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
+          --   },
+        },
         -- pickers = {}
         extensions = {
           ['ui-select'] = {
             require('telescope.themes').get_dropdown(),
           },
+          ['live_grep_args'] = {
+            mappings = { -- extend mappings
+              i = {
+                ['<C-k>'] = lga_actions.quote_prompt(),
+                ['<C-i>'] = lga_actions.quote_prompt { postfix = ' --iglob ' },
+                -- freeze the current list and start a fuzzy search in the frozen list
+                ['<C-space>'] = actions.to_fuzzy_refine,
+              },
+            },
+          },
         },
       }
 
       -- Enable Telescope extensions if they are installed
-      pcall(require('telescope').load_extension, 'fzf')
-      pcall(require('telescope').load_extension, 'ui-select')
+      pcall(telescope.load_extension, 'fzf')
+      pcall(telescope.load_extension, 'ui-select')
+      pcall(telescope.load_extension, 'live_grep_args')
 
       -- See `:help telescope.builtin`
       local builtin = require 'telescope.builtin'
+      local live_grep_args = telescope.extensions.live_grep_args.live_grep_args
       vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
       vim.keymap.set('n', '<leader>sk', builtin.keymaps, { desc = '[S]earch [K]eymaps' })
       vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
       vim.keymap.set('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
       vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
-      vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep' })
       vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
       vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
       vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
+      vim.keymap.set('n', '<leader>sg', live_grep_args, { desc = '[S]earch by [G]rep' })
 
       -- Slightly advanced example of overriding default behavior and theme
       vim.keymap.set('n', '<leader>/', function()
@@ -922,6 +959,9 @@ require('lazy').setup({
   { -- Collection of various small independent plugins/modules
     'echasnovski/mini.nvim',
     config = function()
+      -- TODO: move somewhere else when I need to config more than just `Mini`
+      local config = require 'config'
+
       -- Better Around/Inside textobjects
       --
       -- Examples:
@@ -947,6 +987,11 @@ require('lazy').setup({
         },
       }
 
+      -- split and join arguments (very useful for Python)
+      require('mini.splitjoin').setup {}
+
+      require('mini.animate').setup {}
+
       require('mini.bufremove').setup {}
 
       require('mini.move').setup {}
@@ -954,6 +999,9 @@ require('lazy').setup({
       require('mini.icons').setup {}
 
       require('mini.tabline').setup {}
+
+      require('mini.sessions').setup {}
+
       -- Simple and easy statusline.
       --  You could remove this setup call if you don't like it,
       --  and try some other statusline plugin
@@ -974,69 +1022,24 @@ require('lazy').setup({
       --  Remove buffer while preserving window structure
 
       --  Start page
-      require('mini.starter').setup {
-        header = function()
-          local day = os.date '%A'
-          local headers = {
-            ['Monday'] = [[
-███╗   ███╗ ██████╗ ███╗   ██╗██████╗  █████╗ ██╗   ██╗
-████╗ ████║██╔═══██╗████╗  ██║██╔══██╗██╔══██╗╚██╗ ██╔╝
-██╔████╔██║██║   ██║██╔██╗ ██║██║  ██║███████║ ╚████╔╝ 
-██║╚██╔╝██║██║   ██║██║╚██╗██║██║  ██║██╔══██║  ╚██╔╝  
-██║ ╚═╝ ██║╚██████╔╝██║ ╚████║██████╔╝██║  ██║   ██║   
-╚═╝     ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚═════╝ ╚═╝  ╚═╝   ╚═╝   
-            ]],
-            ['Tuesday'] = [[
-████████╗██╗   ██╗███████╗███████╗██████╗  █████╗ ██╗   ██╗
-╚══██╔══╝██║   ██║██╔════╝██╔════╝██╔══██╗██╔══██╗╚██╗ ██╔╝
-   ██║   ██║   ██║█████╗  ███████╗██║  ██║███████║ ╚████╔╝ 
-   ██║   ██║   ██║██╔══╝  ╚════██║██║  ██║██╔══██║  ╚██╔╝  
-   ██║   ╚██████╔╝███████╗███████║██████╔╝██║  ██║   ██║   
-   ╚═╝    ╚═════╝ ╚══════╝╚══════╝╚═════╝ ╚═╝  ╚═╝   ╚═╝   
-            ]],
-            ['Wednesday'] = [[
-██╗    ██╗███████╗██████╗ ███╗   ██╗███████╗███████╗██████╗  █████╗ ██╗   ██╗
-██║    ██║██╔════╝██╔══██╗████╗  ██║██╔════╝██╔════╝██╔══██╗██╔══██╗╚██╗ ██╔╝
-██║ █╗ ██║█████╗  ██║  ██║██╔██╗ ██║█████╗  ███████╗██║  ██║███████║ ╚████╔╝ 
-██║███╗██║██╔══╝  ██║  ██║██║╚██╗██║██╔══╝  ╚════██║██║  ██║██╔══██║  ╚██╔╝  
-╚███╔███╔╝███████╗██████╔╝██║ ╚████║███████╗███████║██████╔╝██║  ██║   ██║   
- ╚══╝╚══╝ ╚══════╝╚═════╝ ╚═╝  ╚═══╝╚══════╝╚══════╝╚═════╝ ╚═╝  ╚═╝   ╚═╝   
-            ]],
-            ['Thursday'] = [[
-████████╗██╗  ██╗██╗   ██╗██████╗ ███████╗██████╗  █████╗ ██╗   ██╗
-╚══██╔══╝██║  ██║██║   ██║██╔══██╗██╔════╝██╔══██╗██╔══██╗╚██╗ ██╔╝
-   ██║   ███████║██║   ██║██████╔╝███████╗██║  ██║███████║ ╚████╔╝ 
-   ██║   ██╔══██║██║   ██║██╔══██╗╚════██║██║  ██║██╔══██║  ╚██╔╝  
-   ██║   ██║  ██║╚██████╔╝██║  ██║███████║██████╔╝██║  ██║   ██║   
-   ╚═╝   ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝╚═════╝ ╚═╝  ╚═╝   ╚═╝   
-            ]],
-            ['Friday'] = [[
-███████╗██████╗ ██╗██████╗  █████╗ ██╗   ██╗
-██╔════╝██╔══██╗██║██╔══██╗██╔══██╗╚██╗ ██╔╝
-█████╗  ██████╔╝██║██║  ██║███████║ ╚████╔╝ 
-██╔══╝  ██╔══██╗██║██║  ██║██╔══██║  ╚██╔╝  
-██║     ██║  ██║██║██████╔╝██║  ██║   ██║   
-╚═╝     ╚═╝  ╚═╝╚═╝╚═════╝ ╚═╝  ╚═╝   ╚═╝   
-            ]],
-            ['Saturday'] = [[
-███████╗ █████╗ ████████╗██╗   ██╗██████╗ ██████╗  █████╗ ██╗   ██╗
-██╔════╝██╔══██╗╚══██╔══╝██║   ██║██╔══██╗██╔══██╗██╔══██╗╚██╗ ██╔╝
-███████╗███████║   ██║   ██║   ██║██████╔╝██║  ██║███████║ ╚████╔╝ 
-╚════██║██╔══██║   ██║   ██║   ██║██╔══██╗██║  ██║██╔══██║  ╚██╔╝  
-███████║██║  ██║   ██║   ╚██████╔╝██║  ██║██████╔╝██║  ██║   ██║   
-╚══════╝╚═╝  ╚═╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═╝   ╚═╝   
-            ]],
-            ['Sunday'] = [[
-███████╗██╗   ██╗███╗   ██╗██████╗  █████╗ ██╗   ██╗
-██╔════╝██║   ██║████╗  ██║██╔══██╗██╔══██╗╚██╗ ██╔╝
-███████╗██║   ██║██╔██╗ ██║██║  ██║███████║ ╚████╔╝ 
-╚════██║██║   ██║██║╚██╗██║██║  ██║██╔══██║  ╚██╔╝  
-███████║╚██████╔╝██║ ╚████║██████╔╝██║  ██║   ██║   
-╚══════╝ ╚═════╝ ╚═╝  ╚═══╝╚═════╝ ╚═╝  ╚═╝   ╚═╝   
-            ]],
-          }
-          return headers[day]
-        end,
+      local starter = require 'mini.starter'
+      starter.setup {
+        header = config.starter.header(),
+        items = {
+          starter.sections.sessions(3, true),
+          starter.sections.builtin_actions(),
+          starter.sections.recent_files(5, false, true),
+          starter.sections.recent_files(5, true, false),
+          {
+            { name = 'Notes', action = 'Neorg index', section = 'Notes' },
+            { name = 'Journal', action = 'Neorg journal toc open', section = 'Notes' },
+          },
+        },
+        content_hooks = {
+          starter.gen_hook.indexing('Notes', { 'Builtin actions', 'Sessions', 'Recent files (current directory)', 'Recent files' }),
+          starter.gen_hook.aligning('center', 'center'),
+          starter.gen_hook.adding_bullet(),
+        },
       }
 
       -- Mini - map

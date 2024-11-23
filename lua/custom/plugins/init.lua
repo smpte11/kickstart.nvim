@@ -26,7 +26,7 @@ return {
     },
     -- Optional dependencies
     keys = {
-      { '<leader>fo', '<cmd>Oil --float<cr>', desc = 'Open File Explorer (Oil)' },
+      { '<leader>tf', '<cmd>Oil --float<cr>', desc = '[T]oggle [F]ile Explorer (Oil)' },
       {
         '<Esc>',
         function()
