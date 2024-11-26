@@ -14,10 +14,10 @@ else
   set shortmess=aoO
 endif
 badd +1 Starter
-badd +176 ~/.config/nvim/init.lua
+badd +463 init.lua
 argglobal
 %argdel
-edit ~/.config/nvim/init.lua
+edit init.lua
 wincmd t
 let s:save_winminheight = &winminheight
 let s:save_winminwidth = &winminwidth
@@ -36,12 +36,12 @@ setlocal fdn=20
 setlocal fen
 silent! normal! zE
 let &fdl = &fdl
-let s:l = 176 - ((18 * winheight(0) + 20) / 41)
+let s:l = 463 - ((15 * winheight(0) + 27) / 54)
 if s:l < 1 | let s:l = 1 | endif
 keepjumps exe s:l
 normal! zt
-keepjumps 176
-normal! 0
+keepjumps 463
+normal! 025|
 tabnext 1
 if exists('s:wipebuf') && len(win_findbuf(s:wipebuf)) == 0 && getbufvar(s:wipebuf, '&buftype') isnot# 'terminal'
   silent exe 'bwipe ' . s:wipebuf
