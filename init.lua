@@ -456,9 +456,13 @@ require('lazy').setup({
         --
         defaults = {
           path_display = custom_path_display,
-          --   mappings = {
-          --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
-          --   },
+          mappings = {
+            i = { ['<c-enter>'] = 'to_fuzzy_refine' },
+          },
+          layout_config = {
+            width = 0.925,
+            height = 0.95,
+          },
         },
         -- pickers = {}
         extensions = {
@@ -471,7 +475,7 @@ require('lazy').setup({
                 ['<C-k>'] = lga_actions.quote_prompt(),
                 ['<C-i>'] = lga_actions.quote_prompt { postfix = ' --iglob ' },
                 -- freeze the current list and start a fuzzy search in the frozen list
-                ['<C-space>'] = actions.to_fuzzy_refine,
+                ['<C-enter>'] = actions.to_fuzzy_refine,
               },
             },
           },
@@ -1027,13 +1031,13 @@ require('lazy').setup({
         header = config.starter.header(),
         items = {
           starter.sections.sessions(3, true),
-          starter.sections.builtin_actions(),
-          starter.sections.recent_files(5, false, true),
-          starter.sections.recent_files(5, true, false),
           {
             { name = 'Notes', action = 'Neorg index', section = 'Notes' },
             { name = 'Journal', action = 'Neorg journal toc open', section = 'Notes' },
           },
+          starter.sections.builtin_actions(),
+          starter.sections.recent_files(5, false, true),
+          starter.sections.recent_files(5, true, false),
         },
         content_hooks = {
           starter.gen_hook.indexing('Notes', { 'Builtin actions', 'Sessions', 'Recent files (current directory)', 'Recent files' }),
