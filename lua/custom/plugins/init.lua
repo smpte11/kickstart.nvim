@@ -7,6 +7,14 @@ return {
   'nvim-lua/plenary.nvim', -- lua functions that many plugins use
   'christoomey/vim-tmux-navigator', -- tmux & split window navigation
   {
+    'LintaoAmons/scratch.nvim',
+    event = 'VeryLazy',
+    keys = {
+      { '<M-C-n>', '<cmd>Scratch<cr>', mode = 'n' },
+      { '<M-C-o>', '<cmd>ScratchOpen<cr>', mode = 'n' },
+    },
+  },
+  {
     'stevearc/oil.nvim',
     lazy = false,
     dependencies = { { 'echasnovski/mini.icons', opts = {} } },

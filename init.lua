@@ -499,6 +499,7 @@ require('lazy').setup({
       -- See `:help telescope.builtin`
       local builtin = require 'telescope.builtin'
       local live_grep_args = telescope.extensions.live_grep_args.live_grep_args
+      vim.keymap.set('n', '<leader>"', builtin.registers, { desc = '["] Registers' })
       vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
       vim.keymap.set('n', '<leader>sk', builtin.keymaps, { desc = '[S]earch [K]eymaps' })
       vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
@@ -560,7 +561,11 @@ require('lazy').setup({
 
       -- Useful status updates for LSP.
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
-      { 'j-hui/fidget.nvim', opts = {} },
+      { 'j-hui/fidget.nvim', opts = {
+        window = {
+          align = 'top',
+        },
+      } },
 
       -- Allows extra capabilities provided by nvim-cmp
       'hrsh7th/cmp-nvim-lsp',
@@ -724,7 +729,8 @@ require('lazy').setup({
         -- But for many setups, the LSP (`ts_ls`) will work just fine
         terraformls = {},
         ts_ls = {},
-        pyright = {},
+        pylsp = {},
+        ruff = {},
         gopls = {},
         groovyls = {},
         dockerls = {},
@@ -815,6 +821,7 @@ require('lazy').setup({
         }
       end,
       formatters_by_ft = {
+        python = { 'ruff' },
         lua = { 'stylua' },
         hcl = { 'packer_fmt' },
         terraform = { 'terraform_fmt' },
