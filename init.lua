@@ -435,7 +435,12 @@ require('lazy').setup({
       local lga_actions = require 'telescope-live-grep-args.actions'
 
       -- functions
-      local function custom_path_display(opts, path)
+      local function custom_path_display(_, path)
+        local cwd = vim.fn.getcwd()
+        if path:sub(1, #cwd) == cwd then
+          path = path:sub(#cwd + 2)
+        end
+
         local parts = vim.split(path, '/')
         local num_parts = #parts
 
@@ -443,10 +448,14 @@ require('lazy').setup({
           -- If the path has 3 or fewer parts, display it as is
           return path
         else
-          -- Otherwise, shorten the path but keep the last 3 parts in full
-          local shortened_path = table.concat(parts, '/', 1, num_parts - 3)
+          -- Shorten the path but keep the first and last 3 parts in full
+          for i = 2, num_parts - 3 do
+            parts[i] = parts[i]:sub(1, 1)
+          end
+          local first_part = parts[1]
+          local shortened_path = table.concat(parts, '/', 2, num_parts - 3)
           local last_three_parts = table.concat(parts, '/', num_parts - 2, num_parts)
-          return ' ' .. shortened_path .. '/  /' .. last_three_parts
+          return first_part .. shortened_path .. '/  /' .. last_three_parts
         end
       end
 
@@ -456,6 +465,7 @@ require('lazy').setup({
         --
         defaults = {
           path_display = custom_path_display,
+          dynamic_preview_title = true,
           mappings = {
             i = { ['<c-enter>'] = 'to_fuzzy_refine' },
           },

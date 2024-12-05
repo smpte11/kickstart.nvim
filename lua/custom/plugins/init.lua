@@ -14,7 +14,7 @@ return {
     ---@type oil.SetupOpts
     opts = {
       columns = {
-        'icons',
+        'icon',
         'permissions',
         'size',
         'mtype',
@@ -26,7 +26,7 @@ return {
     },
     -- Optional dependencies
     keys = {
-      { '<leader>tf', '<cmd>Oil --float<cr>', desc = '[T]oggle [F]ile Explorer (Oil)' },
+      { '<leader>tf', '<cmd>Oil<cr>', desc = '[T]oggle [F]ile Explorer (Oil)' },
       {
         '<Esc>',
         function()
