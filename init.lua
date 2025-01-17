@@ -9,8 +9,7 @@ vim.loader.enable()
 ========         |.-""""""""""""""""""-.|   |-----|          ========
 ========         ||                    ||   | === |          ========
 ========         ||   KICKSTART.NVIM   ||   |-----|          ========
-========         ||                    ||   | === |          ========
-========         ||                    ||   |-----|          ========
+========         ||                    ||   | === |          ======== ========         ||                    ||   |-----|          ========
 ========         ||:Tutor              ||   |:::::|          ========
 ========         |'-..................-'|   |____o|          ========
 ========         `"")----------------(""`   ___________      ========
@@ -510,7 +509,7 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
       vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
       vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
-      vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
+      vim.keymap.set('n', '<leader>sR', builtin.resume, { desc = '[S]earch [R]esume' })
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
       vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
       vim.keymap.set('n', '<leader>sg', live_grep_args, { desc = '[S]earch by [G]rep' })
@@ -728,7 +727,12 @@ require('lazy').setup({
         -- But for many setups, the LSP (`ts_ls`) will work just fine
         terraformls = {},
         ts_ls = {},
-        pylsp = {},
+        pyright = {
+          {
+            pyright = { autoImportCompletion = true },
+            python = { analysis = { autoSearchPaths = true, diagnosticMode = 'openFilesOnly', useLibraryCodeForTypes = true } },
+          },
+        },
         ruff = {},
         gopls = {},
         groovyls = {},
@@ -1011,7 +1015,43 @@ require('lazy').setup({
       -- split and join arguments (very useful for Python)
       require('mini.splitjoin').setup {}
 
-      require('mini.animate').setup {}
+      -- cursor animation
+      local animate = require 'mini.animate'
+      local mouse_scrolled = false
+      for _, scroll in ipairs { 'Up', 'Down' } do
+        local key = '<ScrollWheel' .. scroll .. '>'
+        vim.keymap.set({ '', 'i' }, key, function()
+          mouse_scrolled = true
+          return key
+        end, { expr = true })
+      end
+
+      vim.api.nvim_create_autocmd('FileType', {
+        pattern = 'grug-far',
+        callback = function()
+          vim.b.minianimate_disable = true
+        end,
+      })
+
+      animate.setup {
+        resize = {
+          timing = animate.gen_timing.linear { duration = 50, unit = 'total' },
+        },
+        scroll = {
+          timing = animate.gen_timing.linear { duration = 150, unit = 'total' },
+          subscroll = animate.gen_subscroll.equal {
+            predicate = function(total_scroll)
+              if mouse_scrolled then
+                mouse_scrolled = false
+                return false
+              end
+              return total_scroll > 1
+            end,
+          },
+        },
+      }
+
+      require('mini.indentscope').setup {}
 
       require('mini.bufremove').setup {}
 
@@ -1108,7 +1148,6 @@ require('lazy').setup({
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
   require 'kickstart.plugins.debug',
-  require 'kickstart.plugins.indent_line',
   require 'kickstart.plugins.lint',
   require 'kickstart.plugins.autopairs',
   require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
