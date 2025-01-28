@@ -3,14 +3,14 @@ return {
   event = 'VeryLazy',
   keys = {
     {
-      '<leader>ue',
+      '<leader>te',
       function()
         require('edgy').toggle()
       end,
       desc = 'Edgy Toggle',
     },
     -- stylua: ignore
-    { "<leader>uE", function() require("edgy").select() end, desc = "Edgy Select Window" },
+    { "<leader>tE", function() require("edgy").select() end, desc = "Edgy Select Window" },
   },
   opts = function()
     local opts = {
@@ -19,6 +19,7 @@ return {
       },
       right = {
         { title = 'Grug Far', ft = 'grug-far', size = { width = 0.4 } },
+        { title = 'CodeCompanion Chat', ft = 'CodeCompanion', size = { width = 0.4 } },
       },
       keys = {
         -- increase width

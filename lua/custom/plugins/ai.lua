@@ -1,5 +1,29 @@
 return {
   {
+    'olimorris/codecompanion.nvim',
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+      'nvim-treesitter/nvim-treesitter',
+    },
+    config = true,
+    keys = {
+      { '<leader>ac', '<cmd>CodeCompanion<CR>', desc = 'Code Companion' },
+    },
+    opts = {
+      opts = {
+        log_level = 'DEBUG',
+      },
+      strategies = {
+        chat = {
+          adapter = 'copilot',
+        },
+        inline = {
+          adapter = 'copilot',
+        },
+      },
+    },
+  },
+  {
     'CopilotC-Nvim/CopilotChat.nvim',
     branch = 'main',
     cmd = 'CopilotChat',

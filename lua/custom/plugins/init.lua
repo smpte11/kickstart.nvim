@@ -23,6 +23,9 @@ return {
       view_options = {
         show_hidden = true,
       },
+      keymaps = {
+        ['<C-r>'] = 'actions.refresh',
+      },
     },
     -- Optional dependencies
     keys = {
